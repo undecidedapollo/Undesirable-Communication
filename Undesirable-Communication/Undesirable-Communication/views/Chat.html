@@ -1,3 +1,6 @@
 ﻿<div ng-controller="ChatController">
-    {{test}}
+    <div class="text-center center-block" ng-show="CurrentState == States.LOADING">
+        <h3>Finding chat partner...</h3>
+        <img class="loadingImage" src="../Images/loading.gif" />
+    </div>
 </div>

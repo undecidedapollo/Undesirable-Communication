@@ -5,11 +5,19 @@
 	<meta charset="utf-8" />
     <link rel="stylesheet" href="Content/bootstrap/bootstrap-theme.css" />
     <link rel="stylesheet" href="Content/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/toastr/angular-toastr.min.css" />
 </head>
 <body>
+    <ng-toast></ng-toast>
     <div ng-app="UndesirableCommunication">
-        <div ng-view>
+        <div class="wrapper">
+            <div class="page-header">
+                <h1>Undesirable Communication</h1>
+            </div>
+            <div ng-view>
 
+            </div>
         </div>
     </div>
 
@@ -18,6 +26,14 @@
     <script src="Scripts/angular/angular.js"></script>
     <script src="Scripts/angular/angular-route.js"></script>
     <script src="Scripts/angular/angular-resource.js"></script>
+    <script src="Scripts/angular/angular-sanitize.js"></script>
+    <script src="Scripts/angular/angular-animate.js"></script>
+    <script src="localScripts/toastr/angular-toastr.min.js"></script>
+
+    <script src="localScripts/angular/module/Chat.js"></script>
+    <script src="localScripts/angular/service/ChatService.js"></script>
+    <script src="localScripts/angular/controller/HomeController.js"></script>
+    <script src="localScripts/angular/controller/SignupController.js"></script>
     <script src="localScripts/angular/controller/ChatController.js"></script>
     <script src="localScripts/angular/app.js"></script>
 </body>

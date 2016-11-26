@@ -1,0 +1,21 @@
+﻿<div ng-controller="SignupController">
+    <div class="row">
+        <div class="col-md-offset-2 col-md-8">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    Signup
+                </div>
+                <div class="panel-body">
+                    <p>
+                        To get started chatting, all you have todo is choose a username.
+                    </p>
+                    <p style="color:red;">{{Error}}</p>
+                    <label for="usernameButton">Username: </label>
+                    <input ng-model="ChatName" id="usernameButton" type="text" />
+                    <br />
+                    <button class="btn btn-success" ng-click="FindChatPartner()">Find Chat Partner</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
