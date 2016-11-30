@@ -9,6 +9,17 @@
                 LOADING: "LOADING"
             };
 
+            var chatHub = $.connection.chatHub;
+
+            registerClientMethods(chatHub);
+
+            // Start Hub
+            $.connection.hub.start().done(function () {
+
+                registerEvents(chatHub);
+
+            });
+
             $scope.CurrentState = $scope.States.LOADING;
 
         }]);
