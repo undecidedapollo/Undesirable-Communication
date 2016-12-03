@@ -9,16 +9,12 @@
                 LOADING: "LOADING"
             };
 
-            var chatHub = $.connection.chatHub;
+            var defaultDatabase = firebase.database();
 
-            registerClientMethods(chatHub);
-
-            // Start Hub
-            $.connection.hub.start().done(function () {
-
-                registerEvents(chatHub);
-
+            defaultDatabase.ref('PendingUsers/').once("value").then(function (snapshot) {
+                var un = snapshot.val().User;
             });
+
 
             $scope.CurrentState = $scope.States.LOADING;
 
