@@ -20,11 +20,11 @@ namespace Undesirable_Communication.Infrastructure
             }
             catch (ChatGroupNotFoundException e)
             {
-                return JsonFactory.CreateJsonMessage(new OutgoingHttpMessage { Message = "Your group could not be found.", Action = "groupNotFound" }, HttpStatusCode.BadRequest, Request);
+                return JsonFactory.CreateJsonMessage(new OutgoingHttpMessage { Message = "Your group could not be found.", Action = "groupNotFound" }, HttpStatusCode.NotFound, Request);
             }
             catch (UserNotFoundException e)
             {
-                return JsonFactory.CreateJsonMessage(new OutgoingHttpMessage { Message = "Your user Id could not be found.", Action = "userNotFound" }, HttpStatusCode.BadRequest, Request);
+                return JsonFactory.CreateJsonMessage(new OutgoingHttpMessage { Message = "Your user Id could not be found.", Action = "userNotFound" }, HttpStatusCode.NotFound, Request);
             }
             catch (InvalidModelException e)
             {

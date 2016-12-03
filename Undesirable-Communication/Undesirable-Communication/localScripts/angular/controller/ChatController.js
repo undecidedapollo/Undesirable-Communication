@@ -1,10 +1,10 @@
 ﻿(function () {
     var app = angular.module("UndesirableCommunication_Chat");
     app.controller("ChatController", [
-        '$scope', 'ChatService', '$location', '$interval', '$timeout' , function (
+        '$scope', 'ChatService', '$location', '$interval', '$timeout', function (
         $scope, ChatService, $location, $interval, $timeout) {
             $scope.test = "TESTIng!@#";
-            
+
             $scope.States = {
                 LOADING: "LOADING",
                 LOADING_POST_REGISTER: "LOADING_POST_REGISTER",
@@ -47,21 +47,29 @@
                 return;
             };
 
+            var getRandomInt = function (min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
             var checkStatusInterval = function () {
+                $scope.StatusIteration++;
                 if ($scope.operationPending != 0) {
                     return;
                 }
 
-                if ($scope.lastCheckTime != null) {
+                if ($scope.startCheckTime != null) {
                     var currentTime = new Date().getTime();
 
-                    if ((currentTime - $scope.lastCheckTime) > 60000) {
+                    if ((currentTime - $scope.startCheckTime) > 60000) {
                         $scope.LoadingMessage = "There appears to be no one online. We'll keep trying...";
+                    } else {
+                        if ($scope.StatusIteration % 3 == 0) {
+                            $scope.LoadingMessage = $scope.LoadingMessages[getRandomInt(0, $scope.LoadingMessages.length - 1)];
+                        }
                     }
 
-                    $scope.lastCheckTime = currentTime;
                 } else {
-                    $scope.lastCheckTime = new Date().getTime();
+                    $scope.startCheckTime = new Date().getTime();
                 }
 
 
@@ -174,7 +182,7 @@
                     $timeout(function () {
                         updateScrollBar();
                     }, 100);
-                    
+
                 }
             };
 
@@ -193,7 +201,7 @@
                     $location.url("/signup");
                 }
             };
-            
+
             var cancelInterval = function () {
                 if ($scope.interval != null) {
                     $interval.cancel($scope.interval);
@@ -217,7 +225,7 @@
                 $scope.CurrentMessage = "";
 
                 var newMessage = {
-                    Content : currentMessage,
+                    Content: currentMessage,
                     IsRequestingUser: true
                 };
 
@@ -236,7 +244,7 @@
                 $scope.operationPending--;
                 var currMess = data.data;
 
-                if(currMess == null){
+                if (currMess == null) {
                     return;
                 }
 
@@ -309,6 +317,8 @@
             };
 
             var startup = function () {
+                $scope.startCheckTime = null;
+                $scope.StatusIteration = 0;
                 $scope.operationPending = 0;
                 $scope.CurrentState = $scope.States.LOADING;
                 $scope.MessageList = [];
@@ -316,15 +326,30 @@
                 registerUser();
             };
 
+            $scope.LoadingMessages = [
+                "Still can't find a user...",
+                "Where are the users...",
+                "Donde esta la useras???",
+                "You user? Where partner?",
+                "Marco.........",
+                "I spy with my little eye a partner...JK"
+            ];
 
 
             var updateScrollBar = function () {
-                try{
-                    $(".messages-content").animate({ scrollTop: $(".messages-content")[0].scrollHeight }, 1000);
-                } catch (ex) {
 
-                }
-                
+                $timeout(function () {
+                    try {
+                        var objDiv = document.getElementById("messages-content");
+                        objDiv.scrollTop = objDiv.scrollHeight;
+                    } catch (ex) {
+
+                    }
+                }, 150);
+
+
+
+
             };
 
             startup();

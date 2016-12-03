@@ -10,13 +10,13 @@
         <img class="loadingImage" src="../Images/loading.gif" />
     </div>
     <div class="text-center center-block" ng-show="CurrentState == States.CHATTING">
-        <h3>You are chatting with SOMEONE</h3>
+        <h3>You are chatting with <b>{{ChatPartnerName}}</b></h3>
         <div class="chat">
             <div class="chat-title">
                 <h1>{{ChatPartnerName}}</h1>
             </div>
             <div class="messages">
-                <div class="messages-content">
+                <div id="messages-content" class="messages-content">
                     <div ng-repeat="message in MessageList | orderBy: 'message.TimeSent'">
                         <div ng-show="message.IsRequestingUser" class="message message-personal">
                             {{message.Content}}
