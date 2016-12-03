@@ -8,5 +8,7 @@ namespace Undesirable_Communication.Model.Connection.Incoming
     public class IncomingLeaveChat
     {
         public Guid Id { get; set; }
+
+        public Guid CurrentUserId { get; set; }
     }
 }

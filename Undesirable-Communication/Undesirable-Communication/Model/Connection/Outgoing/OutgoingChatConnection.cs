@@ -13,7 +13,9 @@ namespace Undesirable_Communication.Model.Connection.Outgoing
         public OutgoingMinimalUser User1 { get; set; }
         public OutgoingMinimalUser User2 { get; set; }
 
-        public static OutgoingChatConnection Parse(ChatConnection x)
+        public string OtherUsersName { get; set; }
+
+        public static OutgoingChatConnection Parse(ChatConnection x, string otherName)
         {
             if(x == null)
             {
@@ -24,7 +26,8 @@ namespace Undesirable_Communication.Model.Connection.Outgoing
             {
                 Id = x.Id,
                 User1 = OutgoingMinimalUser.Parse(x.User1),
-                User2 = OutgoingMinimalUser.Parse(x.User2)
+                User2 = OutgoingMinimalUser.Parse(x.User2),
+                OtherUsersName = otherName
             };
         }
     }

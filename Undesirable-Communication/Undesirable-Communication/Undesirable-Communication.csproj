@@ -107,6 +107,8 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="css\chat\normalize.css" />
+    <Content Include="css\chat\style.css" />
     <Content Include="packages.config" />
     <Content Include="Scripts\SignalR\jquery.signalR-2.1.2.js" />
     <Content Include="Scripts\SignalR\jquery.signalR-2.1.2.min.js" />
@@ -192,6 +194,7 @@
     <Compile Include="Model\Connection\Outgoing\OutgoingChatConnection.cs" />
     <Compile Include="Model\Connection\Outgoing\OutgoingChatStatus.cs" />
     <Compile Include="Model\Errors\ChatGroupNotFoundException.cs" />
+    <Compile Include="Model\Errors\InvalidModelException.cs" />
     <Compile Include="Model\Errors\UserNotFoundException.cs" />
     <Compile Include="Model\Message\Outgoing\OutgoingHttpMessage.cs" />
     <Compile Include="Model\User\Incoming\IncomingRegisteredUser.cs" />

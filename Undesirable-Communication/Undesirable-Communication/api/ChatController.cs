@@ -27,11 +27,17 @@ namespace Undesirable_Communication.api
         {
             return ErrorFactory.Handle((Func<HttpResponseMessage>) (() =>
             {
-                var manager = ChatMananger.GetInstance();
+                var manager = ChatManager.GetInstance();
 
-                var newUserGuid = new Guid();
+                var newUserGuid = Guid.NewGuid();
 
-                var theNewUser = new RegisteredUser { Id = newUserGuid, Username = newUser.Username, TimeRegistered = DateTime.Now };
+                if(newUser.Username == null || newUser.Username.Length < 6 || newUser.Username.Length > 25)
+                {
+                    throw new InvalidModelException();
+                }
+
+
+                var theNewUser = new RegisteredUser { Id = newUserGuid, Username = newUser.Username, TimeRegistered = DateTime.Now, LastCheckIn = DateTime.Now };
 
                 manager.EnqueuePendingUser(theNewUser);
                 var returnObject = new OutgoingUserRegistrationResult { UserId = newUserGuid };
@@ -41,28 +47,53 @@ namespace Undesirable_Communication.api
             }), this.Request);
         }
 
-        [HttpGet]
+        [HttpPost]
         [Route("api/Chat/CheckStatus")]
         public HttpResponseMessage CheckStatus(IncomingRegisteredUser newUser)
         {
             return ErrorFactory.Handle((Func<HttpResponseMessage>)(() =>
             {
-                var manager = ChatMananger.GetInstance();
+                var manager = ChatManager.GetInstance();
 
                 var existsInPending = manager.QueryPendingUsers((x) =>
                 {
-                    return x.FirstOrDefault(y => y.Id == newUser.Id);
+                    var user = x.FirstOrDefault(y => y.Id == newUser.Id);
+
+                    if(user != null)
+                    {
+                        user.LastCheckIn = DateTime.Now;
+                    }
+
+                    return user;
                 });
 
                 var existsInKnown = manager.QueryKnownConnections((x) =>
                 {
-                    return x.FirstOrDefault(y => y.User1.Id == newUser.Id || y.User2.Id == newUser.Id);
+                    var con =  x.FirstOrDefault(y => y.User1.Id == newUser.Id || y.User2.Id == newUser.Id);
+
+                    if(con != null)
+                    {
+                        if(con.User1.Id == newUser.Id)
+                        {
+                            con.User1.LastCheckIn = DateTime.Now;
+                        }else if(con.User2.Id == newUser.Id)
+                        {
+                            con.User2.LastCheckIn = DateTime.Now;
+                        }
+                    }
+
+                    return con;
+                    
                 });
 
                 var isPending = existsInPending != null;
-                var isRegistered = existsInPending == null && existsInKnown == null;
-
-                var status = new OutgoingChatStatus { IsRegistered = isRegistered, IsPending = isPending, connection = OutgoingChatConnection.Parse(existsInKnown) };
+                var isRegistered = existsInPending != null || existsInKnown != null;
+                string otherName = "";
+                if (existsInKnown != null)
+                {
+                    otherName = existsInKnown.User1.Id == newUser.Id ? existsInKnown.User2.Username : existsInKnown.User1.Username;
+                }
+                var status = new OutgoingChatStatus { IsRegistered = isRegistered, IsPending = isPending, connection = OutgoingChatConnection.Parse(existsInKnown, otherName) };
 
                 return JsonFactory.CreateJsonMessage(status, HttpStatusCode.OK, this.Request);
             }), this.Request);
@@ -74,17 +105,33 @@ namespace Undesirable_Communication.api
         {
             return ErrorFactory.Handle((Func<HttpResponseMessage>)(() =>
             {
-                var manager = ChatMananger.GetInstance();
+                var manager = ChatManager.GetInstance();
 
                 var outgoingMessages = manager.QueryKnownConnections((x) =>
                 {
                     var connection = x.FirstOrDefault(y => y.Id == chatId);
 
-                    if (connection == null) return null;
+                    if (connection == null)
+                    {
+                        throw new ChatGroupNotFoundException();
+                    }
+
+                    if(connection.User1.Id == currentUserId)
+                    {
+                        connection.User1.LastCheckIn = DateTime.Now;
+                    }else if(connection.User2.Id == currentUserId)
+                    {
+                        connection.User2.LastCheckIn = DateTime.Now;
+                    }
+                    else
+                    {
+                        throw new UserNotFoundException();
+                    }
+
 
                     var messages = connection.Messages.OrderByDescending(m => m.TimeSent).Take(100).ToList();
 
-                    var outgoingResponse = OutgoingMessageList.Parse(messages, connection);
+                    var outgoingResponse = OutgoingMessageList.Parse(messages, connection, currentUserId);
 
                     return outgoingResponse;
                 });
@@ -99,9 +146,9 @@ namespace Undesirable_Communication.api
         {
             return ErrorFactory.Handle((Func<HttpResponseMessage>)(() =>
             {
-                var manager = ChatMananger.GetInstance();
+                var manager = ChatManager.GetInstance();
 
-                manager.QueryKnownConnections((x) =>
+                var outgoingMess = manager.QueryKnownConnections((x) =>
                 {
                     var connection = x.FirstOrDefault(y => y.Id == incMessage.ChatId);
 
@@ -115,23 +162,30 @@ namespace Undesirable_Communication.api
                     if(connection.User1.Id == incMessage.CurrentUserId)
                     {
                         UserInList = connection.User1;
+                        connection.User1.LastCheckIn = DateTime.Now;
+                        
                     }else if (connection.User2.Id == incMessage.CurrentUserId)
                     {
                         UserInList = connection.User2;
+                        connection.User2.LastCheckIn = DateTime.Now;
                     }
                     else
                     {
                         throw new UserNotFoundException();
                     }
 
-                    var newMessage = new Message { Author = UserInList, TimeSent = DateTime.Now, Content = incMessage.Content };
+                    UserInList.LastCheckIn = DateTime.Now;
+
+                    var newMessage = new Message { Id = Guid.NewGuid(), Author = UserInList, TimeSent = DateTime.Now, Content = incMessage.Content };
 
                     connection.Messages.Add(newMessage);
 
-                    return (object)null;
+                    var outgoingMessage = OutgoingMessage.Parse(newMessage, incMessage.CurrentUserId);
+
+                    return outgoingMessage;
                 });
 
-                return JsonFactory.CreateJsonMessage(new OutgoingHttpMessage {Message = "Message sent" }, HttpStatusCode.OK, this.Request);
+                return JsonFactory.CreateJsonMessage(outgoingMess, HttpStatusCode.OK, this.Request);
             }), this.Request);
         }
 
@@ -141,11 +195,11 @@ namespace Undesirable_Communication.api
         {
             return ErrorFactory.Handle((Func<HttpResponseMessage>)(() =>
             {
-                var manager = ChatMananger.GetInstance();
+                var manager = ChatManager.GetInstance();
 
                 manager.QueryKnownConnections((x) =>
                 {
-                    var connection = x.FirstOrDefault(y => y.Id == leaveChatRequest.Id);
+                    var connection = x.FirstOrDefault(y => y.Id == leaveChatRequest.Id && (y.User1.Id == leaveChatRequest.CurrentUserId || y.User2.Id == leaveChatRequest.CurrentUserId));
 
                     if (connection == null)
                     {
@@ -160,7 +214,5 @@ namespace Undesirable_Communication.api
                 return JsonFactory.CreateJsonMessage(new OutgoingHttpMessage { Message = "Chat group left." }, HttpStatusCode.OK, this.Request);
             }), this.Request);
         }
-
-
     }
 }

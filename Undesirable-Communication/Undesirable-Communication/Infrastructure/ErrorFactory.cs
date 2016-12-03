@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
+using Undesirable_Communication.Model.Errors;
 using Undesirable_Communication.Model.Message.Outgoing;
 
 namespace Undesirable_Communication.Infrastructure
@@ -16,6 +17,18 @@ namespace Undesirable_Communication.Infrastructure
             try
             {
                 return functionToEncapsulate();
+            }
+            catch (ChatGroupNotFoundException e)
+            {
+                return JsonFactory.CreateJsonMessage(new OutgoingHttpMessage { Message = "Your group could not be found.", Action = "groupNotFound" }, HttpStatusCode.BadRequest, Request);
+            }
+            catch (UserNotFoundException e)
+            {
+                return JsonFactory.CreateJsonMessage(new OutgoingHttpMessage { Message = "Your user Id could not be found.", Action = "userNotFound" }, HttpStatusCode.BadRequest, Request);
+            }
+            catch (InvalidModelException e)
+            {
+                return JsonFactory.CreateJsonMessage(new OutgoingHttpMessage { Message = "Invalid model exception.", Action = "invalidModel" }, HttpStatusCode.BadRequest, Request);
             }
             catch (NotImplementedException e)
             {

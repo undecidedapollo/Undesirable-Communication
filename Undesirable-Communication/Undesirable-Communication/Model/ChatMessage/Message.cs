@@ -8,6 +8,7 @@ namespace Undesirable_Communication.Model.ChatMessage
 {
     public class Message
     {
+        public Guid Id { get; set; }
         public RegisteredUser Author { get; set; }
         public DateTime TimeSent { get; set; }
         public string Content {get; set; }

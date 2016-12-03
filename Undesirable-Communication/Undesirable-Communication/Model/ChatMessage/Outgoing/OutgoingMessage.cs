@@ -8,11 +8,13 @@ namespace Undesirable_Communication.Model.ChatMessage.Outgoing
 {
     public class OutgoingMessage
     {
+        public Guid Id { get; set; }
         public OutgoingMinimalUser Author { get; set; }
         public DateTime TimeSent { get; set; }
         public string Content { get; set; }
 
-        public static OutgoingMessage Parse(Message x)
+        public bool IsRequestingUser { get; set; }
+        public static OutgoingMessage Parse(Message x, Guid currentUserId)
         {
             if (x == null)
             {
@@ -23,7 +25,9 @@ namespace Undesirable_Communication.Model.ChatMessage.Outgoing
             {
                 TimeSent = x.TimeSent,
                 Content = x.Content,
-                Author = OutgoingMinimalUser.Parse(x.Author)
+                Author = OutgoingMinimalUser.Parse(x.Author),
+                Id = x.Id,
+                IsRequestingUser = x.Author.Id.Equals(currentUserId)
             };
 
         }
